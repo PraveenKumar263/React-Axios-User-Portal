@@ -1,17 +1,20 @@
-import React, { useState, useEffect } from 'react';
+import { Route, Routes } from 'react-router-dom';
 import './App.css';
-import { Switch, Route } from 'react-router-dom';
-import { userProvider } from './components/UsersContext';
+import { ButtonAppBar } from './components/AppBar';
+import { HomePage } from './components/HomePage';
+import { UserList } from './components/UserList';
+import { UserProvider } from './components/UsersContext';
 
 function App() {
 
   return (
-  <userProvider>
-    <Switch>
-      <Route path="/" exact component={HomePage} />
-      <Route path="/userData" component={UserList} /> 
-    </Switch>
-  </userProvider>
+    <UserProvider>
+      <ButtonAppBar />
+      <Routes>
+        <Route path="/" exact element={<HomePage />} />
+        <Route path="/userData" element={<UserList />} />
+      </Routes>
+    </UserProvider>
   );
 }
 
