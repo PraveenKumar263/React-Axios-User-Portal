@@ -28,7 +28,7 @@ export function UserProvider({ children }) {
 
     const removeUser = async (userId) => {
         try {
-            const response = await axios.delete(`${BASE_URL}/${userId}`);
+            await axios.delete(`${BASE_URL}/${userId}`);
             setUsers(users.filter(user => user.id !== userId));
         }
         catch (error) {
