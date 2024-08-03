@@ -1,76 +1,74 @@
 import axios from 'axios';
-import { useState, createContext, Children } from 'react';
+import { createContext, useEffect, useState } from 'react';
 
-const axios = require('axios').default;
+// Context API
+export const UserContext = createContext();
 
-const BASE_URL = 'https://jsonplaceholder.typicode.com/users';
+// Context Provider
+export function UserProvider({ children }) {
+    const BASE_URL = 'https://jsonplaceholder.typicode.com/users';
 
-const [users, setUsers] = useState([]);
+    const [users, setUsers] = useState([]);
 
-const userContext = createContext();
+    // fetch data once when the provider mounts
+    useEffect(() => {
+        const fetchData = async () => {
+            try {
+                const response = await axios.get(BASE_URL);
+                // console.log(response.data)
+                setUsers(response.data);
+            }
+            catch (error) {
+                console.log('Error fetching data:', error);
+            }
+        };
 
-export const userProvider = ({ children}) => {
-    const fetchData = async () => {
+        fetchData();
+    }, []);
+
+    const removeUser = async (userId) => {
         try {
-        const response = await axios.get(BASE_URL);
-        setUsers(response.data);
-        } 
+            const response = await axios.delete(`${BASE_URL}/${userId}`);
+            setUsers(users.filter(user => user.id !== userId));
+        }
         catch (error) {
-        console.log('Error fetching data:', error);
-        throw error;
+            console.log('Error deleting user:', error);
         }
     };
-
-    const removeUser = async (userToRemove) => {
-        try {
-            const newUsers = prevUsers.filter((user) => {
-                user.id !== userToRemove.id
-            })
-            setUsers(newUsers);
-        }
-        catch(error) {
-            console.log(error);
-        }
-    }
 
     const addUser = async (userToAdd) => {
         try {
             const response = await axios.post(BASE_URL, userToAdd);
-            const addedUser = response.data;
-        
-            setUsers(prevUsers => {
-                const newUsers = [...prevUsers, addedUser];
-            });
+            // console.log(response.data)
+            setUsers(prevUsers => [...prevUsers, response.data]);
         }
-        catch(error) {
-            console.log(error);
+        catch (error) {
+            console.log('Error adding user:', error);
         }
-    }
+    };
 
     const updateUser = async (userToUpdate) => {
         try {
             const response = await axios.put(`${BASE_URL}/${userToUpdate.id}`, userToUpdate);
-            const updatedUser = response.data;
-
+            // console.log(response.data)
             setUsers(prevUsers => {
-                const index = prevUsers.findIndex(user => user.id === updatedUser.id);
+                const index = prevUsers.findIndex(user => user.id === userToUpdate.id);
                 if (index !== -1) {
                     const newUsers = [...prevUsers];
-                    newUsers[index] = { ...newUsers[index], ...updatedUser };
+                    newUsers[index] = response.data;
                     return newUsers;
-                } 
-                else {
-                    return prevUsers;
                 }
+                return prevUsers;
             });
         }
-        catch(error) {
-            console.log(error);
+        catch (error) {
+            console.log('Error updating user:', error);
         }
-    }
+    };
+
     return (
-        <userContext.Provider value={{ users, fetchData, removeUser, addUser, updateUser }}>
+        <UserContext.Provider value={{ users, removeUser, addUser, updateUser }}>
             {children}
-        </userContext.Provider>
+        </UserContext.Provider>
     );
-}
+};
